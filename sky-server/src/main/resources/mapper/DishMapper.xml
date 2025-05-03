@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.sky.mapper.DishMapper">
+    <!--批量删除菜品-->
+    <delete id="deleteBatch">
+        delete  from dish where id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
     <!--菜品分页管理-->
     <select id="pageQuery" resultType="com.sky.vo.DishVO">
         select d.*,c.name categoryName from dish d left join category c
@@ -9,5 +16,9 @@
             <if test="status != null">and status = #{status}</if>
             <if test="categoryId != null"> and category_id = #{categoryId}</if>
         order by update_time desc
+    </select>
+    <!--根据id查询菜品-->
+    <select id="selectById" resultType="com.sky.entity.Dish">
+        select * from dish where id = #{id}
     </select>
 </mapper>
