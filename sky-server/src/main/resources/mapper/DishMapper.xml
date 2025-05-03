@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sky.mapper.DishMapper">
+    <!--菜品分页管理-->
+    <select id="pageQuery" resultType="com.sky.vo.DishVO">
+        select d.*,c.name categoryName from dish d left join category c
+            on d.category_id = c.id
+            <if test="name != null">and name like concat('%',#{},'%')</if>
+            <if test="status != null">and status = #{status}</if>
+            <if test="categoryId != null"> and category_id = #{categoryId}</if>
+        order by update_time desc
+    </select>
+</mapper>

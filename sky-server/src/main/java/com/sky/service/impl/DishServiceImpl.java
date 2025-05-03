@@ -1,11 +1,16 @@
 package com.sky.service.impl;
 
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import com.sky.dto.DishDTO;
+import com.sky.dto.DishPageQueryDTO;
 import com.sky.entity.Dish;
 import com.sky.entity.DishFlavor;
 import com.sky.mapper.DishFlavorMapper;
 import com.sky.mapper.DishMapper;
+import com.sky.result.PageResult;
 import com.sky.service.DishService;
+import com.sky.vo.DishVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +55,30 @@ public class DishServiceImpl implements DishService {
         });
         //2.2 调用mapper,批量插入口味列表数据
         dishFlavorMapper.insertBatch(dishFlavorList);
+
+    }
+
+    /**
+     * 菜品分页管理
+     * @param dishPageQueryDTO
+     * @return
+     */
+    @Override
+    public PageResult pageDish(DishPageQueryDTO dishPageQueryDTO) {
+        // 1. 启动分页，指定当前页码和每页大小
+        PageHelper.startPage(dishPageQueryDTO.getPage(),dishPageQueryDTO.getPageSize());
+        // 2. 调用 dishMapper 的 pageQuery 方法，执行分页查询，返回 Page<DishVO> 对象
+        Page<DishVO> page = dishMapper.pageQuery(dishPageQueryDTO);
+        // 3. 封装分页结果，返回总条数和当前页数据列表
+        return new PageResult(page.getTotal(), page.getResult());
+    }
+
+    /**
+     * 批量删除菜品
+     * @param ids
+     */
+    @Transactional
+    public void deleteBatch(List<Long> ids) {
 
     }
 }
