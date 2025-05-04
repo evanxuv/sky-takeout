@@ -25,4 +25,11 @@ public interface DishFlavorMapper {
      * @param dishIds
      */
     void deleteBarch(List<Long> dishIds);
+
+    /**
+     * 回显菜品
+     * @param id
+     * @return
+     */
+    List<DishFlavor> selectByDishId(Long id);
 }
