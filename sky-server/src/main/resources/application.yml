@@ -39,7 +39,7 @@ sky:
     admin-token-name: token
   # 阿里云oss配置
   alioss:
-    endpoint: oss-cn-shanghai.aliyuncs.com
-    access-key-id: ${alioss.access-key-id}
-    access-key-secret: ${alioss.access-key-secret}
-    bucket-name: ${alioss.bucket-name}
+    endpoint: ${sky.alioss.endpoint}
+    access-key-id: ${sky.access-key-id}
+    access-key-secret: ${sky.access-key-secret}
+    bucket-name: ${sky.bucket-name}
