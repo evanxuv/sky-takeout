@@ -15,6 +15,10 @@
                 #{dishId}
             </foreach>
     </delete>
+    <!--修改餐品口味-->
+    <delete id="deleteByDishId">
+        delete  from dish_flavor where dish_id = #{dishId}
+    </delete>
     <!--回显菜品-->
     <select id="selectByDishId" resultType="com.sky.entity.DishFlavor">
         select * from dish_flavor where dish_id = #{dishId}
