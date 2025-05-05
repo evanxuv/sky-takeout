@@ -4,6 +4,7 @@ server:
 spring:
   profiles:
     active: dev
+  # 开启循环依赖
   main:
     allow-circular-references: true
   datasource:
@@ -12,6 +13,13 @@ spring:
       url: jdbc:mysql://${sky.datasource.host}:${sky.datasource.port}/${sky.datasource.database}?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
       username: ${sky.datasource.username}
       password: ${sky.datasource.password}
+  # redis配置信息
+  redis:
+    host: ${spring.redis.host}
+    port: ${spring.redis.port}
+    password: ${spring.redis.password}
+
+
 
 mybatis:
   #mapper配置文件
