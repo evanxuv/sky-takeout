@@ -13,6 +13,13 @@ import java.util.List;
 
 @Mapper
 public interface DishMapper {
+    /**
+     * 查询套餐
+     * @param dish
+     * @return
+     */
+    @Select("select * from dish where category_id = #{categoryId} and status = #{status}")
+    List<Dish> list(Dish dish);
 
     /**
      * 根据分类id查询菜品数量

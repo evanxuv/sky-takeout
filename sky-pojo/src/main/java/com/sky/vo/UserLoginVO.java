@@ -13,8 +13,8 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class UserLoginVO implements Serializable {
 
-    private Long id;
-    private String openid;
-    private String token;
+    private Long id;    // 用户id
+    private String openid; // 用户唯一标识
+    private String token; // 令牌
 
 }
