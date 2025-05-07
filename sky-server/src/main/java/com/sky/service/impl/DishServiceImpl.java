@@ -19,11 +19,13 @@ import com.sky.vo.DishVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author evan
@@ -41,6 +43,8 @@ public class DishServiceImpl implements DishService {
     private SetmealDishMapper setmealDishMapper;
     @Autowired
     private SetmealMapper setmealMapper;
+    @Autowired
+    private RedisTemplate redisTemplate;
     /**
      * 条件查询菜品和口味
      * @param dish
@@ -66,6 +70,26 @@ public class DishServiceImpl implements DishService {
     }
 
     /**
+     * 修改菜品状态
+     * @param status
+     * @param id
+     */
+    @Override
+    public void updateStatus(Integer status, Long id) {
+        Dish dish = Dish.builder()
+                .id(id)
+                .status(status)
+                .build();
+        dishMapper.update(dish);
+
+        // 缓存优化--清理缓存  "*dish_" 前面加*是为了防止redis没有序列化，进行模糊匹配
+        // 这里没有dish对象，所以直接全部删除缓存
+        Set keys = redisTemplate.keys("dish_*");
+        redisTemplate.delete(keys);
+
+    }
+
+    /**
      * 添加菜品
      * @param dishDTO
      */
@@ -83,12 +107,17 @@ public class DishServiceImpl implements DishService {
         Long id = dish.getId();
         // 2. 构造菜品口味列表数据，将其存入dish_flavor表中
         List<DishFlavor> dishFlavorList = dishDTO.getFlavors();
-        //2.1 关联菜品id
-        dishFlavorList.forEach(dishFlavor -> {
-            dishFlavor.setDishId(id);
-        });
-        //2.2 调用mapper,批量插入口味列表数据
-        dishFlavorMapper.insertBatch(dishFlavorList);
+        if (dishFlavorList != null && dishFlavorList.size() > 0) {
+            //2.1 关联菜品id
+            dishFlavorList.forEach(dishFlavor -> {
+                dishFlavor.setDishId(id);
+            });
+            //2.2 调用mapper,批量插入口味列表数据
+            dishFlavorMapper.insertBatch(dishFlavorList);
+        }
+
+        // 缓存优化--清理缓存  "*dish_" 前面加*是为了防止redis没有序列化，进行模糊匹配
+        redisTemplate.delete("*dish_" + dishDTO.getCategoryId());
 
     }
 
@@ -129,6 +158,12 @@ public class DishServiceImpl implements DishService {
         dishMapper.deleteBatch(ids);
         //4. 删除dish_flavor口味表中的数据
         dishFlavorMapper.deleteBarch(ids);
+
+        // 缓存优化--清理缓存  "*dish_" 前面加*是为了防止redis没有序列化，进行模糊匹配
+        // 这里没有dish对象，所以直接全部删除缓存
+        Set keys = redisTemplate.keys("dish_*");
+        redisTemplate.delete(keys);
+
 
     }
 
@@ -172,6 +207,10 @@ public class DishServiceImpl implements DishService {
             dishFlavorMapper.insertBatch(flavors);
         }
 
+        // 缓存优化--清理缓存  "*dish_" 前面加*是为了防止redis没有序列化，进行模糊匹配
+        // 这里没有dish对象，所以直接全部删除缓存
+        Set keys = redisTemplate.keys("dish_*");
+        redisTemplate.delete(keys);
 
 
     }

@@ -28,6 +28,19 @@ public class DishController {
     private DishService dishService;
 
     /**
+     *修改菜品状态
+     * @param status
+     * @param id
+     * @return
+     */
+    @PostMapping("/status/{status}")
+    @ApiOperation("修改菜品状态")
+    public Result startOtStop(@PathVariable("status") Integer status, Long id) {
+        log.info("修改菜品状态 id={}",id);
+        dishService.updateStatus(status,id);
+        return Result.success();
+    }
+    /**
      * 添加菜品
      * @return
      */
