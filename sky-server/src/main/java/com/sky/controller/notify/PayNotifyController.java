@@ -52,8 +52,8 @@ public class PayNotifyController {
         log.info("商户平台订单号：{}", outTradeNo);
         log.info("微信支付交易号：{}", transactionId);
 
-        //业务处理，修改订单状态、来单提醒
-        orderService.paySuccess(outTradeNo);
+        // //业务处理，修改订单状态、来单提醒
+        // orderService.paySuccess(outTradeNo);
 
         //给微信响应
         responseToWeixin(response);
