@@ -18,4 +18,12 @@ public interface UserMapper {
     @Options(useGeneratedKeys = true,keyProperty = "id")
     @Insert("insert into user(openid,name,create_time) values(#{openid},#{name},#{createTime})")
     void insert(User user);
+
+    /**
+     * 订单表查询下单人id
+     * @param id
+     * @return
+     */
+    @Select("select * from user where id = #{id}")
+    User selectById(Long id);
 }
