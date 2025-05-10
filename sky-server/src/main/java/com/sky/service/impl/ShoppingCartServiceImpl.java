@@ -87,4 +87,13 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         // 注意 只能查看自己名下的购物车
         return shoppingCartMapper.list(BaseContext.getCurrentId());
     }
+
+    /**
+     * 清空购物车
+     */
+    @Override
+    public void clean() {
+        // 注意 只能清空自己名下的购物车
+        shoppingCartMapper.delete(BaseContext.getCurrentId());
+    }
 }
