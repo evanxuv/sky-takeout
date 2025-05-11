@@ -27,6 +27,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author evan
@@ -120,8 +122,28 @@ public class OrdersServiceImpl implements OrdersService {
      * @return
      */
     public OrderPaymentVO payment(OrdersPaymentDTO ordersPaymentDTO) throws Exception {
-        //模拟支付成功
-        log.info("模拟支付成功，订单号：{}", ordersPaymentDTO.getOrderNumber());
+        // 当前登录用户id
+        // Long userId = BaseContext.getCurrentId();
+        // User user = userMapper.selectById(userId);
+        //
+        // //调用微信支付接口，生成预支付交易单
+        // JSONObject jsonObject = weChatPayUtil.pay(
+        //         ordersPaymentDTO.getOrderNumber(), //商户订单号
+        //         new BigDecimal(0.01), //支付金额，单位 元
+        //         "苍穹外卖订单", //商品描述
+        //         user.getOpenid() //微信用户的openid
+        // );
+        //
+        // if (jsonObject.getString("code") != null && jsonObject.getString("code").equals("ORDERPAID")) {
+        //     throw new OrderBusinessException("该订单已支付");
+        // }
+        //
+        // OrderPaymentVO vo = jsonObject.toJavaObject(OrderPaymentVO.class);
+        // vo.setPackageStr(jsonObject.getString("package"));
+        //
+        // return vo;
+        //////////////////////////////////////////////////////////////////////////
+        // 模拟支付成功---修改订单状态
         //业务处理，修改订单状态、来单提醒
         paySuccess(ordersPaymentDTO.getOrderNumber());
         // 返回一个空对象即可
@@ -217,6 +239,7 @@ public class OrdersServiceImpl implements OrdersService {
     @Override
     public void userCancelById(Long id) throws Exception {
         // 根据id查询订单
+        // 这个对象是只读的，用于获取订单的当前状态和信息
         Orders orders = ordersMapper.getById(id);
         // 校验订单是否存在
         if (orders == null) {
@@ -231,14 +254,12 @@ public class OrdersServiceImpl implements OrdersService {
         orderUpdate.setId(id);
         // 订单处于待接单状态下取消，需要进行退款
         if (orders.getStatus().equals(Orders.TO_BE_CONFIRMED)){
-            // //调用微信支付退款接口
-            // weChatPayUtil.refund(
-            //         orders.getNumber(), //商户订单号
-            //         orders.getNumber(), //商户退款单号
-            //         new BigDecimal(0.01),//退款金额，单位 元
-            //         new BigDecimal(0.01));//原订单金额
-            //模拟退款操作，不实际调用微信支付接口
-            log.info("模拟退款操作，订单号：{}", orders.getNumber());
+            //调用微信支付退款接口
+            weChatPayUtil.refund(
+                    orders.getNumber(), //商户订单号
+                    orders.getNumber(), //商户退款单号
+                    new BigDecimal(0.01),//退款金额，单位 元
+                    new BigDecimal(0.01));//原订单金额
             //支付状态修改为 退款
             orderUpdate.setPayStatus(Orders.REFUND);
         }
@@ -247,6 +268,30 @@ public class OrdersServiceImpl implements OrdersService {
         orderUpdate.setCancelReason(MessageConstant.USER_CANCEL_REASON);
         orderUpdate.setCancelTime(LocalDateTime.now());
         ordersMapper.update(orderUpdate);
+    }
+
+    /**
+     * 再来一单
+     * @param id
+     */
+    @Override
+    public void repetition(Long id) {
+        // 查询当前用户id
+        Long userId = BaseContext.getCurrentId();
+        // 根据订单id查询当前订单详情
+        List<OrderDetail> orderDetailList = orderDetailMapper.getByUserId(id);
+        // 将订单详情对象转换为购物车对象
+        List<ShoppingCart> shoppingCartList = orderDetailList.stream().map(x -> {
+            ShoppingCart shoppingCart = new ShoppingCart();
+            // 将原订单详情里面的菜品信息重新复制到购物车对象中
+            BeanUtils.copyProperties(x, shoppingCart, "id");
+            shoppingCart.setUserId(userId);
+            shoppingCart.setCreateTime(LocalDateTime.now());
+            return shoppingCart;
+        }).collect(Collectors.toList());
+        // 将购物车对象批量添加到数据库
+        shoppingCartMapper.insertBatch(shoppingCartList);
+
     }
 
 

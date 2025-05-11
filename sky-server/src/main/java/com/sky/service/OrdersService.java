@@ -52,4 +52,10 @@ public interface OrdersService {
      * @param id
      */
     void userCancelById(Long id) throws Exception;
+
+    /**
+     * 在来一单
+     * @param id
+     */
+    void repetition(Long id);
 }
