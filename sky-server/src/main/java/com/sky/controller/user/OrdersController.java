@@ -83,4 +83,17 @@ public class OrdersController {
         OrderVO orderVO = ordersService.details(id);
         return Result.success(orderVO);
     }
+
+    /**
+     * 用户取消订单
+     * @param id
+     * @return
+     */
+    @ApiOperation("用户取消订单")
+    @PutMapping("/cancel/{id}")
+    public Result cancel(@PathVariable("id") Long id) throws Exception {
+        log.info("用户取消订单 id:{}",id);
+        ordersService.userCancelById(id);
+        return Result.success();
+    }
 }
