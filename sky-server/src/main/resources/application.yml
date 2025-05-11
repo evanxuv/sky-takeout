@@ -73,3 +73,9 @@ sky:
     weChatPayCertFilePath: ${sky.wechat.weChatPayCertFilePath}
     notifyUrl: ${sky.wechat.notifyUrl}
     refundNotifyUrl: ${sky.wechat.refundNotifyUrl}
+  # 地图配置
+  shop:
+    address: 安徽省合肥市瑶海区万达广场
+    ak: Q5dkFIHRyrzMudt1Am748ZaqVcgjJMAx
+    distance: 5000
+
