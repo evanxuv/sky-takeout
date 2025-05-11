@@ -1,17 +1,22 @@
 package com.sky.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import com.sky.constant.MessageConstant;
 import com.sky.context.BaseContext;
+import com.sky.dto.OrdersPageQueryDTO;
 import com.sky.dto.OrdersPaymentDTO;
 import com.sky.dto.OrdersSubmitDTO;
 import com.sky.entity.*;
 import com.sky.exception.OrderBusinessException;
 import com.sky.mapper.*;
+import com.sky.result.PageResult;
 import com.sky.service.OrdersService;
 import com.sky.utils.WeChatPayUtil;
 import com.sky.vo.OrderPaymentVO;
 import com.sky.vo.OrderSubmitVO;
+import com.sky.vo.OrderVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -165,4 +170,47 @@ public class OrdersServiceImpl implements OrdersService {
 
         ordersMapper.update(orders);
     }
+
+    /**
+     * 历史订单查询
+     * 用户端订单分页查询
+     * @param ordersPageQueryDTO
+     * @return
+     */
+    @Override
+    public PageResult pageQueryUser(OrdersPageQueryDTO ordersPageQueryDTO) {
+        // 设置分页
+        PageHelper.startPage(ordersPageQueryDTO.getPage(),ordersPageQueryDTO.getPageSize());
+        // 设置当前用户ID
+        ordersPageQueryDTO.setUserId(BaseContext.getCurrentId());
+        ordersPageQueryDTO.getStatus();
+        log.info("用户id:{}", ordersPageQueryDTO.getUserId());
+        log.info("状态：{}", ordersPageQueryDTO.getStatus());
+        // 分页条件查询
+        Page<Orders> page = ordersMapper.pageQueryUser(ordersPageQueryDTO);
+        // 查询出订单明细，并封装入OrderVO进行响应
+        // 创建一个空的列表，用于存放转换后的订单视图对象（OrderVO）。
+        ArrayList<OrderVO> list = new ArrayList<>();
+        // 判断分页结果是否为空且有数据，如果有订单数据才进行后续处理。
+        if (page!=null && page.getTotal()>0) {
+            //遍历分页查询到的每一个订单（Orders）。
+            for (Orders orders :page) {
+                // 获取当前订单的ID。
+                Long ordersId = orders.getId();
+                // 根据订单ID查询该订单的所有明细（比如每个菜品、数量等）。
+                List<OrderDetail> orderDetails = orderDetailMapper.getByUserId(ordersId);
+                // 创建一个订单视图对象（OrderVO），用于封装订单和明细信息。
+                OrderVO orderVO = new OrderVO();
+                // 把订单（Orders）对象的属性值复制到订单视图对象（OrderVO）中。
+                BeanUtils.copyProperties(orders, orderVO);
+                // 把刚才查到的订单明细列表orderDetails设置到订单视图OrderVO对象中。
+                orderVO.setOrderDetailList(orderDetails);
+                // 把封装好的订单视图orderVO对象加入到结果列表list中。
+                list.add(orderVO);
+            }
+        }
+        return new PageResult(page.getTotal(), list);
+    }
+
+
 }
